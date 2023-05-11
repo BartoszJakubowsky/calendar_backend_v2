@@ -3,16 +3,43 @@ const { UserPassword, UserRegister, User } = require("../models/user");
 module.exports.register = (req, res) => 
 {
     //to change
-    const email = req.params.email;
+    const email = req.body.mail;
     User.findOne({ mail: email })
       .then(user => {
         if (!user) 
         {
-          res.send(true);
+          UserRegister.findOne({ mail: email })
+          .then(userRegister =>{
+            if (!userRegister)
+            {
+
+              const userName = req.body.name;
+              const userMail = req.body.mail;
+              const userPassword = req.body.password;
+              const userPermissions = req.body.permissions;
+              const userRecords = req.body.records;
+              const registerUser = new UserRegister({
+                name: userName, 
+                mail: userMail,
+                password: userPassword,
+                permissions: userPermissions,
+                records: userRecords
+              });
+              
+              registerUser.save()
+              .then(respond => res.send('Prośba o zajerestrowanie konta została wysłana'))
+              .catch(err => console.log(err));
+            }
+            else
+            {
+              res.send('Twoja prośba o rejestrację została już wysłana');
+            }
+          })
+          
         } 
         else 
         {
-          res.send(false);
+          res.send('Użytkownik z podanym mailem już istnieje!');
         }
       })
       .catch(err => console.log(err));
@@ -26,8 +53,8 @@ module.exports.login = (req, res) =>
 
 module.exports.password = (req, res) => 
 {
-    const email = req.params.email;
-    const password = req.params.password;
+    const email = req.body.mail;
+    const password = req.body.password;
     Promise.all([
       User.findOne({ mail: email }),
       UserPassword.findOne({ mail: email })
@@ -40,15 +67,23 @@ module.exports.password = (req, res) =>
      {
         if (!userPassword)
         {
+          
           const userName = user.name;
           const userMail = user.mail;
+          const userPassword = password;
+          const userPermissions = user.permissions;
+          const userRecords = user.records;
           const userId = user._id;
 
-          const newUserPassword = new UserPassword({_id: userId},
+          console.log(userName, userMail, userPassword, userPermissions, userRecords, userId);
+          const newUserPassword = new UserPassword(
           {
+            _id: userId,
             name: userName,
             mail: userMail,
-            password
+            password : userPassword,
+            permissions: userPermissions,
+            records: userRecords,
           });
           newUserPassword.save()
           .then(respond => res.send('Prośba o zresetowanie hasła została wysłana'))
@@ -69,8 +104,41 @@ module.exports.password = (req, res) =>
 
 module.exports.add_user = (req, res) => 
 {
-  //move from register to user
-};
+  
+  const users = req.body;
+
+  for (let i = 0; i < users.length; i++) 
+  {
+    const user = users[i];
+
+              const userName = user.name;
+              const userMail = user.mail;
+              const userPassword = user.password;
+              const userPermissions = user.permissions;
+              const userRecords = user.records;
+              const userId = user._id;
+              const newUser = new User({
+                name: userName, 
+                mail: userMail,
+                password: userPassword,
+                permissions: userPermissions,
+                records: userRecords,
+                _id: userId
+              });
+              
+              newUser.save()
+              .then(respond => 
+                {
+                  UserRegister.deleteOne({_id: userId})
+                })
+              .catch(err => console.log(err));
+            }
+            if (users.length === 1)
+              res.send('Konto zostało dodane');
+            else
+              res.send('Konta zostały dodane');
+  }
+
 
 module.exports.add_password = (req, res) => 
 {

@@ -3,11 +3,12 @@ const app = express();
 const mongoose = require('mongoose');
 const calendarRoutes = require('./routes/calendarRoutes');
 const authRoutes = require('./routes/authRoutes');
-
+var cors = require('cors');
 
 // import jwt from 'jsonwebtoken';
 // const authRoutes = require('./routes/authRoutes.js');
 app.use(express.json());
+app.use(cors());
 // app.use(express.static('public'));
 
 const dbURI = 'mongodb+srv://sroda_wlkp:0cJaoCz6Xc3Qzlcp@calendar.va1iidg.mongodb.net/Sroda_Wlkp?retryWrites=true&w=majority';

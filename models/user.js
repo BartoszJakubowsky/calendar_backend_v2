@@ -15,6 +15,14 @@ const userSchema = new Schema(
         password: {
             type: String,
             required: true
+        },
+        permissions: {
+            type: Array,
+            required: true
+        },
+        records: {
+            type: Array,
+            required: true
         }
 
     }, {timestamps: true});
