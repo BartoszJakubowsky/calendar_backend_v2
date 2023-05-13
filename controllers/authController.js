@@ -1,6 +1,44 @@
+const { response } = require("express");
 const { UserPassword, UserRegister, User } = require("../models/user");
 
-module.exports.register = (req, res) => 
+
+const getAllData = async () => {
+  return Promise.all([
+    User.find(),
+    UserRegister.find(),
+    UserPassword.find()
+  ])
+    .then(results => {
+      const user = results[0];
+      const userRegister = results[1];
+      const userPassword = results[2];
+
+      return { user, userRegister, userPassword };
+    })
+    .catch(err => {
+      console.log(err);
+      return false;
+    });
+};
+
+
+module.exports.get_all = (req, res) => 
+{
+  Promise.all([
+    User.find(),
+    UserRegister.find(),
+    UserPassword.find()
+  ])
+  .then(results => {
+    const user = results[0];
+    const userRegister = results[1];
+    const userPassword = results[2];
+
+    res.send({user, userRegister, userPassword});
+  });
+};
+
+module.exports.register_submit = (req, res) => 
 {
     //to change
     const email = req.body.mail;
@@ -28,7 +66,7 @@ module.exports.register = (req, res) =>
               
               registerUser.save()
               .then(respond => res.send('Prośba o zajerestrowanie konta została wysłana'))
-              .catch(err => console.log(err));
+              .catch(err => {console.log(err); res.send('Wystąpił błąd podczas rejestracji, spóbuj później')});
             }
             else
             {
@@ -42,7 +80,51 @@ module.exports.register = (req, res) =>
           res.send('Użytkownik z podanym mailem już istnieje!');
         }
       })
-      .catch(err => console.log(err));
+      .catch(err => 
+        {
+          console.log(err);
+          res.send('Wystąpił błąd związany z bazą danych, spróbuj później!');
+        });
+};
+
+module.exports.register_add = async (req, res) => {
+  const users = req.body;
+
+  for (let i = 0; i < users.length; i++) {
+    const user = users[i];
+    const userName = user.name;
+    const userMail = user.mail;
+    const userPassword = user.password;
+    const userPermissions = user.permissions;
+    const userRecords = user.records;
+    const userId = user._id;
+    const newUser = new User({
+      name: userName,
+      mail: userMail,
+      password: userPassword,
+      permissions: userPermissions,
+      records: userRecords,
+      _id: userId
+    });
+
+    try {
+      await newUser.save();
+      await UserRegister.deleteOne({ _id: userId });
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  try {
+    const data = await getAllData();
+    if (users.length === 1) {
+      res.send({ data: data, message: 'Użytkownik został zarejestrowany' });
+    } else {
+      res.send({ data: data, message: 'Użytkownicy zostali zarejestrowani' });
+    }
+  } catch (err) {
+    console.log(err);
+  }
 };
 
 module.exports.login = (req, res) => 
@@ -51,7 +133,7 @@ module.exports.login = (req, res) =>
 };
 
 
-module.exports.password = (req, res) => 
+module.exports.password_submit = (req, res) => 
 {
     const email = req.body.mail;
     const password = req.body.password;
@@ -87,7 +169,7 @@ module.exports.password = (req, res) =>
           });
           newUserPassword.save()
           .then(respond => res.send('Prośba o zresetowanie hasła została wysłana'))
-          .catch(err => console.log(err));
+          .catch(err => {console.log(err); res.send('Wystąpił błąd podczas rejestrownia hasła, spróbuj później')});
         }
         else
         {
@@ -99,65 +181,55 @@ module.exports.password = (req, res) =>
       res.send('Użytkownik pod tym mailem nie istnieje')
      }
     })
-    .catch(err => console.log(err));
+    .catch(err => 
+      {
+        console.log(err)
+        res.send('Wystąpił błąd związany z bazą danych, spróbuj później!');
+      });
 };
 
-module.exports.add_user = (req, res) => 
+module.exports.password_add = async (req, res) => 
 {
-  
   const users = req.body;
 
   for (let i = 0; i < users.length; i++) 
   {
-    const user = users[i];
 
-              const userName = user.name;
-              const userMail = user.mail;
-              const userPassword = user.password;
-              const userPermissions = user.permissions;
-              const userRecords = user.records;
-              const userId = user._id;
-              const newUser = new User({
-                name: userName, 
-                mail: userMail,
-                password: userPassword,
-                permissions: userPermissions,
-                records: userRecords,
-                _id: userId
-              });
-              
-              newUser.save()
-              .then(respond => 
-                {
-                  UserRegister.deleteOne({_id: userId})
-                })
-              .catch(err => console.log(err));
-            }
-            if (users.length === 1)
-              res.send('Konto zostało dodane');
-            else
-              res.send('Konta zostały dodane');
+    const id = users[i];
+    const newPassword = users[i];
+    const updatedFields = {password: newPassword}
+
+    try 
+    {
+      await User.findByIdAndUpdate(id, updatedFields, {new:true}).then(updatedUser => 
+        {
+          if (!updatedUser)
+            return false;
+          else
+            UserPassword.findByIdAndDelete(id).catch(err => console.log(err))
+        })
+    } catch (err) {
+      console.log(err);
+      return;
+    }
   }
-
-
-module.exports.add_password = (req, res) => 
-{
+  try {
+    const data = await getAllData();
+    if (users.length === 1) {
+      res.send({ data: data, message: 'Nowe hasło zostało zapisane' });
+    } else {
+      res.send({ data: data, message: 'Nowe hasła zostały zapisane' });
+    }
+  } catch (err) {
+    console.log(err);
+  }
+  
   //move from password to register
 };
 
-module.exports.get_all = (req, res) => 
-{
-  Promise.all([
-    User.find(),
-    UserRegister.find(),
-    UserPassword.find()
-  ])
-  .then(results => {
-    const user = results[0];
-    const userRegister = results[1];
-    const userPassword = results[2];
 
-    res.send({user, userRegister, userPassword});
-  });
-};
+
+
+
+
 

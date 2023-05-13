@@ -1,5 +1,5 @@
 const Calendar = require('../models/calendar');
-
+const { UserPassword, UserRegister, User } = require("../models/user");
 
 module.exports.calendar_get = (req, res) => 
 {
@@ -62,3 +62,20 @@ module.exports.calendar_delete = (req, res) =>
       .catch(err => console.log(err));
 };
 
+
+
+module.exports.data_all = (req, res) => 
+{
+  Promise.all([
+    User.find(),
+    UserRegister.find(),
+    UserPassword.find()
+  ])
+  .then(results => {
+    const user = results[0];
+    const userRegister = results[1];
+    const userPassword = results[2];
+
+    res.send({user, userRegister, userPassword});
+  });
+};
