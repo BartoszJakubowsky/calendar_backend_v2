@@ -127,6 +127,28 @@ module.exports.register_add = async (req, res) => {
   }
 };
 
+
+module.exports.register_delete = async  (req, res) =>
+{
+
+  const id = req.body.id;
+
+  await UserRegister.findByIdAndDelete(id)
+  .catch(err => 
+    {
+      console.log(err);
+      res.send("Wystąpił problem podczas usuwania prośby o reset hasła");
+    })
+
+    try {
+      const data = await getAllData();
+      res.send({data: data, message: 'Prośba o reset hasła została usunięta'});
+    } catch (error) {
+      res.send("Wystąpił problem podczas usuwania prośby o reset hasła");
+      
+    }
+};
+
 module.exports.login = (req, res) => 
 {
      
@@ -227,9 +249,95 @@ module.exports.password_add = async (req, res) =>
   //move from password to register
 };
 
+module.exports.password_delete = async (req, res) =>
+{
+  const id = req.body.id;
+
+  await UserPassword.findByIdAndDelete(id)
+  .catch(err => 
+    {
+      console.log(err);
+      res.send("Wystąpił problem podczas usuwania prośby o reset hasła");
+    })
 
 
+    try {
+      const data = await getAllData();
+      res.send({data: data, message: 'Prośba o reset hasła została usunięta'});
+    } catch (error) {
+      res.send("Wystąpił problem podczas usuwania prośby o reset hasła");
+      
+    }
+};
 
+
+module.exports.user_add = async (req, res) => {
+    
+    const user = req.body;
+    const userName = user.name;
+    const userMail = user.mail;
+    const userPassword = user.password;
+    const userPermissions = user.permissions;
+    const userRecords = user.records;
+    const userId = user._id;
+ 
+    const updatedFields = 
+      {
+        name: userName,
+        mail: userMail,
+        password: userPassword,
+        permissions: userPermissions,
+        records: userRecords,
+        _id: userId
+      }
+
+    try 
+    { 
+      await User.findByIdAndUpdate(userId, updatedFields, {new:true}).then(updatedUser => 
+        {
+          if (!updatedUser)
+          {
+            console.log('tylko tu')
+            res.send(false)
+          }
+        })
+    } catch (err) {
+      console.log(err);
+      res.send(false);
+      return;
+    }
+
+  try 
+  {
+    const data = await getAllData();
+    res.send({ data: data, message: 'Użytkownik został zaktualizowany' });
+  } catch (err) {
+    console.log(err);
+    res.send(false);
+  }
+};
+
+
+module.exports.user_delete = async  (req, res) =>
+{
+
+  const id = req.body.id;
+
+  await User.findByIdAndDelete(id)
+  .catch(err => 
+    {
+      console.log(err);
+      res.send(false);
+    })
+
+    try {
+      const data = await getAllData();
+      res.send({data: data, message: 'Użytkownik został usunięty'});
+    } catch (error) {
+      res.send(false);
+      
+    }
+};
 
 
 
