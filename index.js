@@ -3,17 +3,32 @@ const app = express();
 const mongoose = require('mongoose');
 const calendarRoutes = require('./routes/calendarRoutes');
 const authRoutes = require('./routes/authRoutes');
-var cors = require('cors');
+const cors = require('cors');
+
+//for websockets
+const server = require("http").Server(app);
+const websocket = require("./websockets/websockets");
+const io = require("socket.io")(server, {
+    cors: {
+      origin: "*",
+      methods: ["GET", "POST"],
+    },
+  });
 
 // import jwt from 'jsonwebtoken';
 // const authRoutes = require('./routes/authRoutes.js');
 app.use(express.json());
 app.use(cors());
+
+
 // app.use(express.static('public'));
 
 const dbURI = 'mongodb+srv://sroda_wlkp:0cJaoCz6Xc3Qzlcp@calendar.va1iidg.mongodb.net/Sroda_Wlkp?retryWrites=true&w=majority';
 mongoose.connect(dbURI, {useNewUrlParser: true, useUnifiedTopology: true})
-.then((resault) => app.listen(3003))
+.then((resault) => 
+{
+    // app.listen(3003, ()=> console.log('serwer działa na porcie 3003'));
+})
 .catch(err=> console.log(err))
 
 
@@ -42,38 +57,9 @@ app.get('/admin', (req, res) => {
     res.send('Admin');
 })
 
+
+websocket(io);
 // app.use(authRoutes);
-app.listen(3002, () => console.log('server działa'));
-
-
-
-
-// app.post('/register', (req, res) =>
-// {
-//     const name = req.body.name;
-//     const mail = req.body.mail;
-//     const password = req.body.password;
-
-//     //check if youser already exist
-//     //check if user already didnt register (waiting for approv)
-//     //then put him into database
-// })
-
-// app.post('/password', (req, res)=>
-// {
-//     const name = req.body.mail;
-
-//     //does user wait's for password reset?
-// });
-
-
-
-// app.post('/login', (req, res) =>
-// {
-//     const user = user.fin (u => u.email === req.body.email);
-//     if (!user)
-//     {
-//         return res.sendStatus(401);
-//     }
-// })
+// server.listen(process.env.PORT || 3002, () => console.log('server działa, port 3002'));
+server.listen(3002, () => console.log('server działa, port 3002'));
 
