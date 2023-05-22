@@ -26,23 +26,14 @@ function init(io) {
 
         socket.on("message", function(request) 
         {
-            console.log('fist message');
-            console.log(request);
-
-            return
-            if (request.id !== socket.id) 
-            {
-                io.emit("message", data);
-            }
-
-
+            io.emit("sign", request);                     
         });
 
         socket.on('disconnect', function() 
         {
             console.log('Rozłączono z websockeets');
       
-            const index = activeUsers.indexOf(socket);
+            const index = activeUsers.indexOf(socket.id);
             activeUsers.splice(index, 1);
             console.log('aktywni użytkownicy', activeUsers)
          });
