@@ -1,10 +1,15 @@
+require('dotenv').config();
+const JWT_KEY = process.env.JWT_KEY;
+const DB_LOGIN = process.env.DB_LOGIN;
+const DB_PASSWORD = process.env.DB_PASSWORD;
+
 const express = require ('express');
 const app = express();
 const mongoose = require('mongoose');
 const calendarRoutes = require('./routes/calendarRoutes');
 const authRoutes = require('./routes/authRoutes');
 const cors = require('cors');
-
+const jwt = require('jsonwebtoken');
 //for websockets
 const server = require("http").Server(app);
 const websocket = require("./websockets/websockets");
@@ -14,16 +19,48 @@ const io = require("socket.io")(server, {
       methods: ["GET", "POST"],
     },
   });
+const verifyJWT = (req, res, next) =>
+{
+  console.log();
+  const token = req.headers['x-access-token'];
+  
+  if (!token)
+  {
+    res.status(401).json({ auth: false, message: 'Failed to authenticate' });
+    return;
+  }
+  
+  jwt.verify(token, JWT_KEY, (err, decoded) =>
+  {
+    if (err)
+    {
+      if (req.originalUrl === '/initial')
+      {
+        res.send(false);
+        return
+      }
+      
+      res.status(401).json({ auth: false, message: 'Failed to authenticate' });
+    }
+    if (req.originalUrl === '/initial')
+    {
+      res.send(true)
+    }
+    req.userId = decoded.id;
+    next();
+  })
 
+}
 // import jwt from 'jsonwebtoken';
 // const authRoutes = require('./routes/authRoutes.js');
 app.use(express.json());
 app.use(cors());
+app.use(verifyJWT);
 
 
 // app.use(express.static('public'));
 
-const dbURI = 'mongodb+srv://sroda_wlkp:0cJaoCz6Xc3Qzlcp@calendar.va1iidg.mongodb.net/Sroda_Wlkp?retryWrites=true&w=majority';
+const dbURI = `mongodb+srv://${DB_LOGIN}:${DB_PASSWORD}@calendar.va1iidg.mongodb.net/Sroda_Wlkp?retryWrites=true&w=majority`;
 mongoose.connect(dbURI, {useNewUrlParser: true, useUnifiedTopology: true})
 .then((resault) => 
 {
@@ -57,6 +94,10 @@ app.get('/admin', (req, res) => {
     res.send('Admin');
 })
 
+app.get('/jwt', verifyJWT, (req, res) =>
+{
+  res.send('you are authenticated');
+})
 
 websocket(io);
 // app.use(authRoutes);

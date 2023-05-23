@@ -18,6 +18,9 @@ const calendarSchema = new Schema(
         },
         slots: {
             type: Array
+        },
+        records: {
+            type: Array
         }
 
     }, {timestamps: true});

@@ -16,14 +16,15 @@ module.exports.calendar_get = (req, res) =>
 
 module.exports.calendar_create = (req, res) => 
 {
-    const {name, date, time, slots} = req.params.body;
+    const {name, date, time, slots} = req.body;
     
     const calendar = new Calendar(
         {
             name,
             date, 
             time, 
-            slots
+            slots,
+            records: []
         }
     )
 
@@ -39,27 +40,36 @@ module.exports.calendar_create = (req, res) =>
 
 module.exports.calendar_edit = (req, res) => 
 {
-    const {name, date, time, slots, id} = req.params.body;
-
-    Calendar.updateOne({_id: id}, {name, date, time, slots})
+    const {name, date, time, slots, _id} = req.body;
+    Calendar.updateOne({_id}, {name, date, time, slots})
     .then(result => 
         {
-            res.send(result);
+            res.send(true);
         })
-    .catch(err => console.log(err));
+    .catch(err => 
+        {
+            console.log(err);
+            res.send(false);
+        });
 
 };
 
 module.exports.calendar_delete = (req, res) => 
 {
+
     const id = req.params.id;
 
     Calendar.deleteOne({_id: id})
       .then(result => 
         {
-        res.send(result);
+        res.send(true);
       })
-      .catch(err => console.log(err));
+      .catch(err => 
+        {
+            console.log(err);
+            res.send(false);
+        });
+      
 };
 
 
@@ -78,4 +88,22 @@ module.exports.data_all = (req, res) =>
 
     res.send({user, userRegister, userPassword});
   });
+
 };
+
+module.exports.calendar_sign = (record) => 
+{
+  const {calendarID} = record;
+  Calendar.updateOne({_id : calendarID}, 
+      {
+          $push:{records: record}
+      })
+  .then(result => 
+      {
+      })
+  .catch(err => 
+      {
+          console.log(err);
+          return false;
+      });
+}

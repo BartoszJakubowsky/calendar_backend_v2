@@ -1,3 +1,6 @@
+require('dotenv').config();
+const JWT_KEY = process.env.JWT_KEY;
+const jwt = require('jsonwebtoken');
 const { response } = require("express");
 const { UserPassword, UserRegister, User } = require("../models/user");
 
@@ -151,7 +154,30 @@ module.exports.register_delete = async  (req, res) =>
 
 module.exports.login = (req, res) => 
 {
-     
+      const {mail, password} = req.body;
+
+      User.findOne({ mail })
+      .then(user => 
+        {
+          if (user.password === password)
+          {
+            const id = user._id.toString();
+            // const jsonUserID = JSON.stringify(user._id);
+            const token = jwt.sign({id: id}, JWT_KEY, {
+               expiresIn: 900,
+            })
+
+            res.send({auth: true, token, user: {name: user.name, _id:user._id}, message: 'Zalogowano!'});
+          }
+          else
+            res.send({auth: false, token: false, user: false, message: 'Ups, podano błędne hasło!'})
+
+        })
+      .catch(err=>
+        {
+          console.log(err);
+          res.send({auth: false, token: false, user: false, message: 'Ups, nie znaleziono użytkownika'})
+        });
 };
 
 
@@ -213,39 +239,40 @@ module.exports.password_submit = (req, res) =>
 module.exports.password_add = async (req, res) => 
 {
   const users = req.body;
-
-  for (let i = 0; i < users.length; i++) 
+  try 
   {
-
-    const id = users[i];
-    const newPassword = users[i];
-    const updatedFields = {password: newPassword}
-
-    try 
+    for (let i = 0; i < users.length; i++) 
     {
-      await User.findByIdAndUpdate(id, updatedFields, {new:true}).then(updatedUser => 
-        {
-          if (!updatedUser)
-            return false;
-          else
-            UserPassword.findByIdAndDelete(id).catch(err => console.log(err))
-        })
-    } catch (err) {
-      console.log(err);
-      return;
+      
+      const id = users[i]._id;
+      const newPassword = users[i].password;
+      const updatedFields = {password: newPassword}
+        await User.findByIdAndUpdate(id, updatedFields, {new:true}).then(updatedUser => 
+          {
+            if (!updatedUser)
+              return false;
+            else
+            {
+              UserPassword.findByIdAndDelete(id).catch(err => console.log(err))
+            }
+              
+          })
     }
-  }
-  try {
-    const data = await getAllData();
-    if (users.length === 1) {
-      res.send({ data: data, message: 'Nowe hasło zostało zapisane' });
-    } else {
-      res.send({ data: data, message: 'Nowe hasła zostały zapisane' });
-    }
-  } catch (err) {
-    console.log(err);
-  }
-  
+}
+catch (err) {
+  console.log(err);
+  return;
+}
+    getAllData()
+    .then(data=>
+      {
+        if (users.length === 1) {
+          res.send({ data: data, message: 'Nowe hasło zostało zapisane' });
+        } else {
+          res.send({ data: data, message: 'Nowe hasła zostały zapisane' });
+        }
+      })    
+      .catch(err => console.log(err));
   //move from password to register
 };
 
