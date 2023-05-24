@@ -21,7 +21,13 @@ const io = require("socket.io")(server, {
   });
 const verifyJWT = (req, res, next) =>
 {
-  console.log();
+
+  if(req.originalUrl === '/login')
+  {
+    next();
+    return;
+  }
+
   const token = req.headers['x-access-token'];
   
   if (!token)
@@ -34,19 +40,11 @@ const verifyJWT = (req, res, next) =>
   {
     if (err)
     {
-      if (req.originalUrl === '/initial')
-      {
-        res.send(false);
-        return
-      }
-      
       res.status(401).json({ auth: false, message: 'Failed to authenticate' });
+      return;
     }
-    if (req.originalUrl === '/initial')
-    {
-      res.send(true)
-    }
-    req.userId = decoded.id;
+    
+    // req.id = decoded.user.id;
     next();
   })
 
@@ -56,7 +54,6 @@ const verifyJWT = (req, res, next) =>
 app.use(express.json());
 app.use(cors());
 app.use(verifyJWT);
-
 
 // app.use(express.static('public'));
 
@@ -69,18 +66,6 @@ mongoose.connect(dbURI, {useNewUrlParser: true, useUnifiedTopology: true})
 .catch(err=> console.log(err))
 
 
-// app.get('/user/:email', (req, res) => {
-//     const email = req.params.email;
-//     User.findOne({ mail: email })
-//       .then(user => {
-//         if (!user) {
-//           res.status(404).send('Nie znaleziono użytkownika');
-//         } else {
-//           res.send(user);
-//         }
-//       })
-//       .catch(err => console.log(err));
-//   });
 
 app.get('/', (req, res)=>
 {
@@ -92,11 +77,6 @@ app.use('/calendar', calendarRoutes);
 
 app.get('/admin', (req, res) => {
     res.send('Admin');
-})
-
-app.get('/jwt', verifyJWT, (req, res) =>
-{
-  res.send('you are authenticated');
 })
 
 websocket(io);

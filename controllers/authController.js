@@ -152,35 +152,6 @@ module.exports.register_delete = async  (req, res) =>
     }
 };
 
-module.exports.login = (req, res) => 
-{
-      const {mail, password} = req.body;
-
-      User.findOne({ mail })
-      .then(user => 
-        {
-          if (user.password === password)
-          {
-            const id = user._id.toString();
-            // const jsonUserID = JSON.stringify(user._id);
-            const token = jwt.sign({id: id}, JWT_KEY, {
-               expiresIn: 900,
-            })
-
-            res.send({auth: true, token, user: {name: user.name, _id:user._id}, message: 'Zalogowano!'});
-          }
-          else
-            res.send({auth: false, token: false, user: false, message: 'Ups, podano błędne hasło!'})
-
-        })
-      .catch(err=>
-        {
-          console.log(err);
-          res.send({auth: false, token: false, user: false, message: 'Ups, nie znaleziono użytkownika'})
-        });
-};
-
-
 module.exports.password_submit = (req, res) => 
 {
     const email = req.body.mail;
@@ -366,5 +337,31 @@ module.exports.user_delete = async  (req, res) =>
     }
 };
 
+module.exports.login = (req, res) => 
+{
+      const {mail, password} = req.body;
 
+      User.findOne({ mail })
+      .then(user => 
+        {
+          if (user.password === password)
+          {
+            // const id = user._id.toString();
+            // const jsonUserID = JSON.stringify(user._id);
+            const token = jwt.sign({user}, JWT_KEY, {
+               expiresIn: 900,
+            })
+
+            res.send({auth: true, token, user: {name: user.name, id:user._id}, message: 'Zalogowano!'});
+          }
+          else
+            res.send({auth: false, token: false, user: false, message: 'Ups, podano błędne hasło!'})
+
+        })
+      .catch(err=>
+        {
+          console.log(err);
+          res.send({auth: false, token: false, user: false, message: 'Ups, nie znaleziono użytkownika'})
+        });
+};
 
