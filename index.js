@@ -20,15 +20,24 @@ const io = require("socket.io")(server, {
       methods: ["GET", "POST"],
     },
   });
-  app.use(express.static(path.join(__dirname, 'build')));
+app.use(express.json());
+app.use(cors());
+ 
 
-const routesToPassWithoutJWT = ['/logowanie', '/password/submit', '/register/submit']
+app.use((req, res, next) => {
+  if (req.method === 'GET') {
+    return express.static(path.join(__dirname, 'build'))(req, res, next);
+  }
+  next();
+});
 
+
+const routesToPassWithoutJWT = ['/login', '/password/submit', '/register/submit']
 const verifyJWT = (req, res, next) =>
-{
-
+{ 
   if(routesToPassWithoutJWT.includes(req.originalUrl))
   {
+
     next();
     return;
   }
@@ -59,8 +68,7 @@ const verifyJWT = (req, res, next) =>
 }
 // import jwt from 'jsonwebtoken';
 // const authRoutes = require('./routes/authRoutes.js');
-app.use(express.json());
-app.use(cors());
+
 app.use(verifyJWT);
 
 // app.use(express.static('public'));
