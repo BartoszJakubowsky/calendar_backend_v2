@@ -20,5 +20,6 @@ router.delete('/user/delete', authController.user_delete);
 
 
 router.get('/data/all', authController.get_all);
+router.post('/token', authController.token);
 
 module.exports = router;

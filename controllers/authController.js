@@ -4,12 +4,11 @@ const jwt = require('jsonwebtoken');
 const { response } = require("express");
 const { UserPassword, UserRegister, User } = require("../models/user");
 
-
 const getAllData = async () => {
   return Promise.all([
     User.find(),
     UserRegister.find(),
-    UserPassword.find()
+    UserPassword.find(),
   ])
     .then(results => {
       const user = results[0];
@@ -23,7 +22,14 @@ const getAllData = async () => {
       return false;
     });
 };
+const createToken = (user) =>
+{
+  const token = jwt.sign({user}, JWT_KEY, {
+    expiresIn: 1800,
+ })
 
+ return token;
+}
 
 module.exports.get_all = (req, res) => 
 {
@@ -348,20 +354,24 @@ module.exports.login = (req, res) =>
           {
             // const id = user._id.toString();
             // const jsonUserID = JSON.stringify(user._id);
-            const token = jwt.sign({user}, JWT_KEY, {
-               expiresIn: 900,
-            })
+            const token = createToken(user);
 
-            res.send({auth: true, token, user: {name: user.name, id:user._id}, message: 'Zalogowano!'});
+            res.send({auth: true, token, message: 'Zalogowano!'});
           }
           else
-            res.send({auth: false, token: false, user: false, message: 'Ups, podano błędne hasło!'})
+            res.send({auth: false, token: false, message: 'Ups, podano błędne hasło!'})
 
         })
       .catch(err=>
         {
           console.log(err);
-          res.send({auth: false, token: false, user: false, message: 'Ups, nie znaleziono użytkownika'})
+          res.send({auth: false, token: false, message: 'Ups, nie znaleziono użytkownika'})
         });
 };
 
+module.exports.token = (req, res) =>
+{
+  const user = req.body;
+  const token = createToken(user);
+  res.send({token});
+}

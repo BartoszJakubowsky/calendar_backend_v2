@@ -10,6 +10,7 @@ const calendarRoutes = require('./routes/calendarRoutes');
 const authRoutes = require('./routes/authRoutes');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
+const path = require('path');
 //for websockets
 const server = require("http").Server(app);
 const websocket = require("./websockets/websockets");
@@ -19,10 +20,14 @@ const io = require("socket.io")(server, {
       methods: ["GET", "POST"],
     },
   });
+  app.use(express.static(path.join(__dirname, 'build')));
+
+const routesToPassWithoutJWT = ['/logowanie', '/password/submit', '/register/submit']
+
 const verifyJWT = (req, res, next) =>
 {
 
-  if(req.originalUrl === '/login')
+  if(routesToPassWithoutJWT.includes(req.originalUrl))
   {
     next();
     return;
@@ -43,7 +48,10 @@ const verifyJWT = (req, res, next) =>
       res.status(401).json({ auth: false, message: 'Failed to authenticate' });
       return;
     }
-    
+    // const decodedToken = jwt.decode(token);
+    // const currentTime = Math.floor(Date.now() / 1000); 
+    // const expiresIn = decodedToken.exp - currentTime; 
+
     // req.id = decoded.user.id;
     next();
   })
@@ -65,13 +73,6 @@ mongoose.connect(dbURI, {useNewUrlParser: true, useUnifiedTopology: true})
 })
 .catch(err=> console.log(err))
 
-
-
-app.get('/', (req, res)=>
-{
-    res.send('Strona główna');
-})
-
 app.use(authRoutes);
 app.use('/calendar', calendarRoutes);
 
@@ -82,5 +83,5 @@ app.get('/admin', (req, res) => {
 websocket(io);
 // app.use(authRoutes);
 // server.listen(process.env.PORT || 3002, () => console.log('server działa, port 3002'));
-server.listen(3002, () => console.log('server działa, port 3002'));
+server.listen(process.env.PORT || 3000, () => console.log('server działa, port 3000'));
 
