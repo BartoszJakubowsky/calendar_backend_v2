@@ -24,12 +24,12 @@ app.use(express.json());
 app.use(cors());
  
 
-app.use((req, res, next) => {
-  if (req.method === 'GET') {
-    return express.static(path.join(__dirname, 'build'))(req, res, next);
-  }
-  next();
-});
+// app.use((req, res, next) => {
+//   if (req.method === 'GET') {
+//     return express.static(path.join(__dirname, 'build'))(req, res, next);
+//   }
+//   next();
+// });
 
 
 const routesToPassWithoutJWT = ['/login', '/password/submit', '/register/submit']
@@ -91,5 +91,5 @@ app.get('/admin', (req, res) => {
 websocket(io);
 // app.use(authRoutes);
 // server.listen(process.env.PORT || 3002, () => console.log('server działa, port 3002'));
-server.listen(process.env.PORT || 3000, () => console.log('server działa, port 3000'));
+server.listen(process.env.PORT || 3002, () => console.log('server działa, port 3002'));
 

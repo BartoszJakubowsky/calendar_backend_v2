@@ -7,7 +7,6 @@ function init(io) {
       
     io.on("connection", function(socket) 
     {   
-        
         // const userId = uuidv4();
         // activeUsers[userId] = socket;
         activeUsers.push(socket.id);

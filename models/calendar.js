@@ -19,7 +19,18 @@ const calendarSchema = new Schema(
         slots: {
             type: Array
         },
+        bannedDays : {
+            type: Array,
+            required: true
+        },
+        autoMonth : {
+            type: Boolean,
+            require: true
+        },
         records: {
+            type: Array
+        },
+        slotMessages :{
             type: Array
         }
 

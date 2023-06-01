@@ -16,7 +16,7 @@ module.exports.calendar_get = (req, res) =>
 
 module.exports.calendar_create = (req, res) => 
 {
-    const {name, date, time, slots} = req.body;
+    const {name, date, time, slots, bannedDays, autoMonth} = req.body;
     
     const calendar = new Calendar(
         {
@@ -24,6 +24,8 @@ module.exports.calendar_create = (req, res) =>
             date, 
             time, 
             slots,
+            bannedDays,
+            autoMonth,
             records: []
         }
     )
@@ -40,8 +42,8 @@ module.exports.calendar_create = (req, res) =>
 
 module.exports.calendar_edit = (req, res) => 
 {
-    const {name, date, time, slots, _id} = req.body;
-    Calendar.updateOne({_id}, {name, date, time, slots})
+    const {name, date, time, slots, bannedDays, autoMonth,slotMessages, _id} = req.body;
+    Calendar.updateOne({_id}, {name, date, time, slots, bannedDays, autoMonth, slotMessages})
     .then(result => 
         {
             res.send(true);
