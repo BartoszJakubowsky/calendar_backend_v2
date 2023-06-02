@@ -25,7 +25,7 @@ const getAllData = async () => {
 const createToken = (user) =>
 {
   const token = jwt.sign({user}, JWT_KEY, {
-    expiresIn: 90000,
+    expiresIn: 900,
  })
 
  return token;

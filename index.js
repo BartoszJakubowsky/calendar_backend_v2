@@ -26,18 +26,27 @@ app.use(cors());
 
 // app.use((req, res, next) => {
 //   if (req.method === 'GET') {
+//     console.log('otrzymany get');
 //     return express.static(path.join(__dirname, 'build'))(req, res, next);
 //   }
-//   next();
+//   // next();
 // });
 
-
-const routesToPassWithoutJWT = ['/login', '/password/submit', '/register/submit']
+app.use(express.static(path.join(__dirname, 'build')));
+const routesToPassWithoutJWT = ['/login', '/logowanie', '/password/submit', '/register/submit']
+const knownRoutes = ['/login', '/logowanie', '/password/submit', '/register/submit']
 const verifyJWT = (req, res, next) =>
 { 
+
+  if(req.method === 'GET')
+  {
+    next();
+    return;
+  }
+
+
   if(routesToPassWithoutJWT.includes(req.originalUrl))
   {
-
     next();
     return;
   }
@@ -84,12 +93,12 @@ mongoose.connect(dbURI, {useNewUrlParser: true, useUnifiedTopology: true})
 app.use(authRoutes);
 app.use('/calendar', calendarRoutes);
 
-app.get('/admin', (req, res) => {
-    res.send('Admin');
-})
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'build', 'index.html'));
+});
 
 websocket(io);
 // app.use(authRoutes);
 // server.listen(process.env.PORT || 3002, () => console.log('server działa, port 3002'));
-server.listen(process.env.PORT || 3002, () => console.log('server działa, port 3002'));
+server.listen(process.env.PORT || 3000, () => console.log('server działa, domyślnie port 3000'));
 
