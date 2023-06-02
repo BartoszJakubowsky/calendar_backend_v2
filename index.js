@@ -100,5 +100,5 @@ app.get('*', (req, res) => {
 websocket(io);
 // app.use(authRoutes);
 // server.listen(process.env.PORT || 3002, () => console.log('server działa, port 3002'));
-server.listen(process.env.PORT || 3000, () => console.log('server działa, domyślnie port 3000'));
+server.listen(process.env.PORT || 3002, () => console.log('server działa, domyślnie port 3000'));
 
