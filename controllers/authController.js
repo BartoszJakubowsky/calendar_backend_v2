@@ -74,25 +74,25 @@ module.exports.register_submit = (req, res) =>
               });
               
               registerUser.save()
-              .then(respond => res.send('Prośba o zajerestrowanie konta została wysłana'))
-              .catch(err => {console.log(err); res.send('Wystąpił błąd podczas rejestracji, spóbuj później')});
+              .then(respond => res.send('registerSucces'))
+              .catch(err => {console.log(err); res.send('error')});
             }
             else
             {
-              res.send('Twoja prośba o rejestrację została już wysłana');
+              res.send('registerErrorSend');
             }
           })
           
         } 
         else 
         {
-          res.send('Użytkownik z podanym mailem już istnieje!');
+          res.send('registerErrorUser!');
         }
       })
       .catch(err => 
         {
           console.log(err);
-          res.send('Wystąpił błąd związany z bazą danych, spróbuj później!');
+          res.send('error');
         });
 };
 
