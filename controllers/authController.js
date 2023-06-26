@@ -74,19 +74,21 @@ module.exports.register_submit = (req, res) =>
               });
               
               registerUser.save()
-              .then(respond => res.send('registerSucces'))
-              .catch(err => {console.log(err); res.send('error')});
+              .then(respond => res.send({message: 'registerSuccess'}))
+              .catch(err => {console.log(err); res.send({message: 'error'})});
             }
             else
             {
-              res.send('registerErrorSend');
+              //user register already exist
+              res.send({message : 'registerErrorSend'});
             }
           })
           
         } 
         else 
         {
-          res.send('registerErrorUser!');
+          //user aLready exists
+          res.send({message : 'registerErrorUser'});
         }
       })
       .catch(err => 
@@ -352,7 +354,7 @@ module.exports.login = (req, res) =>
           if (user.password === password)
           {
             const token = createToken(user);
-            res.send({token, message: 'loginSuccess!'});
+            res.send({token, message: 'loginSuccess'});
           }
           else
             res.send({token: false, message: 'validData'})
