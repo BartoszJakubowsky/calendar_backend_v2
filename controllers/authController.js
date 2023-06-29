@@ -26,6 +26,7 @@ const createToken = (user) =>
 {
   const token = jwt.sign({user}, JWT_KEY, {
     expiresIn: 900,
+    expiresIn: 300000,
  })
 
  return token;
@@ -195,23 +196,23 @@ module.exports.password_submit = (req, res) =>
             records: userRecords,
           });
           newUserPassword.save()
-          .then(respond => res.send('Prośba o zresetowanie hasła została wysłana'))
-          .catch(err => {console.log(err); res.send('Wystąpił błąd podczas rejestrownia hasła, spróbuj później')});
+          .then(respond => res.send({message: 'passwordSuccess'}))
+          .catch(err => {console.log(err); res.send({message: 'error'})});
         }
         else
         {
-          res.send('Prośba o zresetowanie hasła została już wysłana')
+          res.send({message: 'passwordError'})
         }
      }
      else
      {
-      res.send('Użytkownik pod tym mailem nie istnieje')
+      res.send({message: 'userNotFound'})
      }
     })
     .catch(err => 
       {
-        console.log(err)
-        res.send('Wystąpił błąd związany z bazą danych, spróbuj później!');
+        console.log('database err', err)
+        res.send({message: 'error'});
       });
 };
 
