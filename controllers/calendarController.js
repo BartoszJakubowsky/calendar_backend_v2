@@ -1,6 +1,5 @@
-const Calendar = require('../models/calendar');
+const {Calendar, createCalendar} = require('../models/calendar');
 const { UserPassword, UserRegister, User } = require("../models/user");
-
 module.exports.calendar_get = (req, res) => 
 {
     Calendar.find()
@@ -15,9 +14,17 @@ module.exports.calendar_get = (req, res) =>
 };
 
 module.exports.calendar_create = (req, res) => 
-{
-    const {name, date, time, slots, bannedDays, autoMonth} = req.body;
-    
+{   
+    const {name, months, slots, bannedDays, autoMonth} = req.body;
+
+    // const newCalendar = createCalendar({name, time, months, slots, bannedDays, autoMonth});
+    // res.send({message: 'apiSuccess', data: 'x'})
+    const x = createCalendar({name, months, slots, bannedDays, autoMonth});
+    res.send({data: x, message: 'apiError'})
+
+
+
+    return;
     const calendar = new Calendar(
         {
             name,
@@ -95,6 +102,19 @@ module.exports.data_all = (req, res) =>
 
 module.exports.calendar_sign = (record) => 
 {
+    // db.calendars.update({
+    //     calendarID, {$set :{
+    //         "months.$[monthName].weeks.$[weekIndex].records.$[recordId].data" : "newName"
+    //     }},{
+    //         "arrayFilters" : [
+    //             {"monthName.name" : "monthName"},
+    //             {"weekIndex.name" : "weekIndex"},        
+    //             {"recordId.id" : "recordId"},        
+    //         ]
+    //     }
+    // })
+
+
   const {calendarID} = record;
   Calendar.updateOne({_id : calendarID}, 
       {

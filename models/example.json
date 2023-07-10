@@ -1,0 +1,44 @@
+{
+    "calendar":
+    {
+        "name": "Środa Wlkp",
+        "id" : "01",
+        "months" : [
+            {
+               "name" : "april.2023",
+               "id" : "04.2023",
+               "weeks" :
+               [
+                    {
+                        "name" : "april.2023_0"
+                        "timeFrom": "10:00",
+                        "timeTo": "15:00",
+                        "timeBetween": "01:00",
+                        "days" : 
+                        [
+                            {
+                                "name" : "monday",
+                                "slots": 
+                                [
+                                    {
+                                        "name": "wózek_1",
+                                        "records" : 
+                                        [
+                                            {
+                                                "id" : "id",
+                                                "data" : ""
+                                            }
+                                        ]
+                                    }
+
+                                ]
+                            }
+
+                        ]
+                    }
+               ]
+            }
+        ] 
+    }
+}   
+
