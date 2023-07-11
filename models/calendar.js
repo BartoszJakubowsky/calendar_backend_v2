@@ -27,6 +27,10 @@ const calendarSchema = new Schema(
             type: Boolean,
             required: true,
         },
+        description : {
+            type: String,
+            required : true
+        },
         messages :{
             type: Array
         }
@@ -40,14 +44,14 @@ const createRecords = (space, id) =>
     const records = [];
     for (let i = 0; i < space; i++) {
         records.push({
-        id: id + space.toString(),
+        id: id + "_" + space.toString(),
         data: ''
       });
     }
 
     return records
 }
-const createCalendar = ({name, months, slots, bannedDays, autoMonth}) => {
+const createCalendar = ({name, months, slots, bannedDays, autoMonth, description}) => {
     const monthsNames = [
         "january",
         "february",
@@ -106,8 +110,7 @@ const createCalendar = ({name, months, slots, bannedDays, autoMonth}) => {
 
 
         const weeks = allWeeksInMonth.map((week, weekIndex) => {
-            const weekId = monthName.date + "_" + weekIndex.toString();
-
+            const weekId = monthYear.date + "_" + weekIndex.toString();
             
             const days = week.map((day, dayIndex)=>
             {
@@ -116,14 +119,15 @@ const createCalendar = ({name, months, slots, bannedDays, autoMonth}) => {
                 const createSlots = slots.map((slot, slotIndex)=>
                 {
                     const slotId =  dayId + "_" + slotIndex;
+                    const slotName = slot.name;
                     const records = createRecords(parseInt(slot.space), slotId);
                     
-                    return {id: slotId, slots: records}
+                    return {id: slotId, name: slotName, records: records}
                 })
 
                 return {...day, id:dayId, slots: createSlots}
             })
-            return {id: weekId, days: days}
+            return {id: weekId, bannedDays, days: days}
         });
 
         return {
@@ -138,21 +142,13 @@ const createCalendar = ({name, months, slots, bannedDays, autoMonth}) => {
 
     return {
         name: name,
-        months : renderedMonths
+        months : renderedMonths,
+        bannedDays,
+        autoMonth,
+        description
     };
 
-
-
-
-    // return new Calendar(
-    //     {
-    //         name, 
-    //         slots,
-    //         records,
-    //         bannedDays,
-    //         autoMonth
-    //     }
-    // )
+   
 }
 
 module.exports = {Calendar, createCalendar};

@@ -2,7 +2,7 @@ require('dotenv').config();
 const JWT_KEY = process.env.JWT_KEY;
 const DB_LOGIN = process.env.DB_LOGIN;
 const DB_PASSWORD = process.env.DB_PASSWORD;
-
+const DB_NAME = process.env.DB_NAME;
 const express = require ('express');
 const app = express();
 const mongoose = require('mongoose');
@@ -82,7 +82,7 @@ app.use(verifyJWT);
 
 // app.use(express.static('public'));
 
-const dbURI = `mongodb+srv://${DB_LOGIN}:${DB_PASSWORD}@calendar.va1iidg.mongodb.net/Sroda_Wlkp?retryWrites=true&w=majority`;
+const dbURI = `mongodb+srv://${DB_LOGIN}:${DB_PASSWORD}@calendar.va1iidg.mongodb.net/${DB_NAME}?retryWrites=true&w=majority`;
 mongoose.connect(dbURI, {useNewUrlParser: true, useUnifiedTopology: true})
 .then((resault) => 
 {

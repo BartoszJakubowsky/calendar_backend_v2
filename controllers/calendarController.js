@@ -15,34 +15,32 @@ module.exports.calendar_get = (req, res) =>
 
 module.exports.calendar_create = (req, res) => 
 {   
-    const {name, months, slots, bannedDays, autoMonth} = req.body;
+    const {name, months, slots, bannedDays, autoMonth, description} = req.body;
 
-    // const newCalendar = createCalendar({name, time, months, slots, bannedDays, autoMonth});
-    // res.send({message: 'apiSuccess', data: 'x'})
-    const x = createCalendar({name, months, slots, bannedDays, autoMonth});
-    res.send({data: x, message: 'apiError'})
+    const newCalendar = createCalendar({name, months, slots, bannedDays, autoMonth, description});
 
+    // res.send({data: x, message: 'apiError'})
 
-
-    return;
     const calendar = new Calendar(
         {
-            name,
-            date, 
-            time, 
-            slots,
-            bannedDays,
-            autoMonth,
-            records: []
+            name: newCalendar.name,
+            months : newCalendar.months,
+            bannedDays : newCalendar.months,
+            autoMonth : newCalendar.autoMonth,
+            description : newCalendar.description
         }
     )
 
     calendar.save()
     .then(result => 
         {
-            res.send(result)
+        res.send({data: result, message: 'apiSuccess'})
         })
-    .catch(err => console.log(err))
+    .catch(err => 
+        {
+            console.log(err);
+            res.send({message: 'apiError'})
+        })
 };
 
 
