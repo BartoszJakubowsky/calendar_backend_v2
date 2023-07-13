@@ -51,7 +51,7 @@ const createRecords = (space, id) =>
 
     return records
 }
-const createCalendar = ({name, months, slots, bannedDays, autoMonth, description}) => {
+const createCalendar = ({name, months, slots, bannedDays, autoMonth, description, time}) => {
     const monthsNames = [
         "january",
         "february",
@@ -82,7 +82,6 @@ const createCalendar = ({name, months, slots, bannedDays, autoMonth, description
         const year = parseInt(yearName, 10);
         const month = monthsNames.indexOf(monthName.toLowerCase());
         const daysInMonth = new Date(year, month+1, 0).getDate();
-        const {timeFrom, timeTo, timeBetween} = monthYear.time;
 
 
         let allWeeksInMonth = [];
@@ -111,7 +110,25 @@ const createCalendar = ({name, months, slots, bannedDays, autoMonth, description
 
         const weeks = allWeeksInMonth.map((week, weekIndex) => {
             const weekId = monthYear.date + "_" + weekIndex.toString();
-            
+
+            const generateTimes = (timeStart, timeEnd, timeBetween) =>
+            {
+                const times = [];
+                let currentTime = timeStart;
+                while (currentTime <= timeEnd) {
+                times.push(currentTime);
+                const [hours, minutes] = currentTime.split(':');
+                const currentMinutes = parseInt(hours) * 60 + parseInt(minutes);
+                const beetwMinutes = parseInt(timeBetween.split(':')[0]) * 60 + parseInt(timeBetween.split(':')[1]);
+                const nextMinutes = currentMinutes + beetwMinutes;
+                const nextHours = Math.floor(nextMinutes / 60).toString().padStart(2, '0');
+                const nextMinutesRemainder = nextMinutes % 60;
+                currentTime = `${nextHours}:${nextMinutesRemainder.toString().padStart(2, '0')}`;
+            }
+        
+            return times;
+            }
+
             const days = week.map((day, dayIndex)=>
             {
                 const dayId  = weekId + "_" + dayIndex.toString();
@@ -127,7 +144,7 @@ const createCalendar = ({name, months, slots, bannedDays, autoMonth, description
 
                 return {...day, id:dayId, slots: createSlots}
             })
-            return {id: weekId, bannedDays, days: days}
+            return {id: weekId, bannedDays, days: days, time: generateTimes(time.timeFrom, time.timeTo, time.timeBetween)}
         });
 
         return {
@@ -136,10 +153,6 @@ const createCalendar = ({name, months, slots, bannedDays, autoMonth, description
         }
     })
     
-
-
-
-
     return {
         name: name,
         months : renderedMonths,

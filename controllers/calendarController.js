@@ -15,11 +15,9 @@ module.exports.calendar_get = (req, res) =>
 
 module.exports.calendar_create = (req, res) => 
 {   
-    const {name, months, slots, bannedDays, autoMonth, description} = req.body;
+    const {name, months, slots, bannedDays, autoMonth, description, time} = req.body;
 
-    const newCalendar = createCalendar({name, months, slots, bannedDays, autoMonth, description});
-
-    // res.send({data: x, message: 'apiError'})
+    const newCalendar = createCalendar({name, months, slots, bannedDays, autoMonth, description, time});
 
     const calendar = new Calendar(
         {
