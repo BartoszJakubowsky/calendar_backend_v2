@@ -10,6 +10,7 @@ function init(io) {
         // const userId = uuidv4();
         // activeUsers[userId] = socket;
         activeUsers.push(socket.id);
+        console.log('działa');
 
         io.to(socket.id).emit('connected', 
         {
@@ -17,11 +18,17 @@ function init(io) {
             id: socket.id
         });
 
-        socket.on("message", function(request) 
+        socket.on("updateRecord", function(request) 
         {
-            io.emit("sign", request);
-            
-            calendarController.calendar_sign(request.message);
+            calendarController.calendar_sign(request)
+            .then(res=>
+                {
+                    if(res)
+                        io.emit("sign", request)
+                    else
+                        throw new Error;
+                })
+            .catch(err => io.to(socket.id).emit('error'));
         });
 
         socket.on('disconnect', function() 

@@ -44,7 +44,7 @@ const createRecords = (space, id) =>
     const records = [];
     for (let i = 0; i < space; i++) {
         records.push({
-        id: id + "_" + space.toString(),
+        id: id + "_" + i.toString(),
         data: ''
       });
     }

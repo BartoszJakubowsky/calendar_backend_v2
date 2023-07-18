@@ -96,32 +96,45 @@ module.exports.data_all = (req, res) =>
 
 };
 
-module.exports.calendar_sign = (record) => 
+module.exports.calendar_sign = async (record) => 
 {
-    // db.calendars.update({
-    //     calendarID, {$set :{
-    //         "months.$[monthName].weeks.$[weekIndex].records.$[recordId].data" : "newName"
-    //     }},{
-    //         "arrayFilters" : [
-    //             {"monthName.name" : "monthName"},
-    //             {"weekIndex.name" : "weekIndex"},        
-    //             {"recordId.id" : "recordId"},        
-    //         ]
+    
+    const newData = record.data;
+    const [monthName, weekIndex, dayIndex, slotIndex, recordIndex] = record.recordID.split('_');
+    const weekID = monthName + "_" + weekIndex;
+    const dayID = weekID + "_" + dayIndex;
+    const slotID = dayID + "_" + slotIndex;
+    const recordID = slotID + "_" + recordIndex;
+
+    // Calendar.updateOne(
+    //     { _id: record.calendarID }, // Filtrowanie po ID kalendarza
+    //     {
+    //       $set: {
+    //         "months.$[month].weeks.$[week].days.$[dayName].slots.$[slot].data": newData
+    //       }
+    //     },
+    //     {
+    //       arrayFilters: [
+    //         { "month.name": monthName },
+    //         { "week.id": weekID },
+    //         { "day.id": dayID },
+    //         { "slot.id": slotID },
+    //         { "record.id": recordID }
+    //       ]
     //     }
-    // })
+    //   )
 
+    //to test
+    Calendar.updateOne(
+            { "_id": record.calendarID, "months.weeks.days.slots.records.id": recordID},
+            { $set: { "months.$[].weeks.$[].days.$[].slots.$[].records.$[record].data": newData } },
+            { arrayFilters: [ { "record.id": "2023.JULY_0_0_1_0" } ] }
+        )
+      .then(res => record)
+      .catch(err => 
+        {
+            console.log(err);
+            return false
+        });
 
-  const {calendarID} = record;
-  Calendar.updateOne({_id : calendarID}, 
-      {
-          $push:{records: record}
-      })
-  .then(result => 
-      {
-      })
-  .catch(err => 
-      {
-          console.log(err);
-          return false;
-      });
 }
