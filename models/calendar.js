@@ -2,40 +2,57 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 
-const calendarSchema = new Schema(
+const slotSchema = new Schema({
+    id: String,
+    name: String,
+    records: [
+      {
+        id: String,
+        data: String,
+      },
+    ],
+  });
+  
+  const daySchema = new Schema({
+    name: String,
+    date: Date,
+    id: String,
+    slots: [slotSchema],
+  });
+  
+  const weekSchema = new Schema({
+    id: String,
+    bannedDays: [String],
+    days: [daySchema],
+  });
+  
+  const monthSchema = new Schema({
+    name: String,
+    weeks: [weekSchema],
+  });
+  
+  const calendarSchema = new Schema(
     {
-        name : {
-            type: String,
-            required: true
-        },
-        date : {
-            type: Array,
-            required: true
-        },
-        months : {
-            type: Array,
-            required : true
-        },
-        slots: {
-            type: Array,
-            required : true
-        },
-        bannedDays : {
-            type: Array,
-        },
-        autoMonth : {
-            type: Boolean,
-            required: true,
-        },
-        description : {
-            type: String,
-            required : true
-        },
-        messages :{
-            type: Array
-        }
-
-    }, {timestamps: true});
+      name: {
+        type: String,
+        required: true,
+      },
+      date: [Date],
+      months: [monthSchema],
+      slots: [slotSchema],
+      bannedDays: [String],
+      autoMonth: {
+        type: Boolean,
+        required: true,
+      },
+      description: {
+        type: String,
+        required: true,
+      },
+      messages: [String],
+    },
+    { timestamps: true }
+  );
 
 const Calendar = mongoose.model('calendar', calendarSchema);
 

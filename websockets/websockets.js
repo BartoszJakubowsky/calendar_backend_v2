@@ -23,6 +23,7 @@ function init(io) {
             calendarController.calendar_sign(request)
             .then(res=>
                 {
+                    console.log('web',res)
                     if(res)
                         io.emit("sign", request)
                     else

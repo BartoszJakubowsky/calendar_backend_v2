@@ -105,36 +105,19 @@ module.exports.calendar_sign = async (record) =>
     const dayID = weekID + "_" + dayIndex;
     const slotID = dayID + "_" + slotIndex;
     const recordID = slotID + "_" + recordIndex;
-
-    // Calendar.updateOne(
-    //     { _id: record.calendarID }, // Filtrowanie po ID kalendarza
-    //     {
-    //       $set: {
-    //         "months.$[month].weeks.$[week].days.$[dayName].slots.$[slot].data": newData
-    //       }
-    //     },
-    //     {
-    //       arrayFilters: [
-    //         { "month.name": monthName },
-    //         { "week.id": weekID },
-    //         { "day.id": dayID },
-    //         { "slot.id": slotID },
-    //         { "record.id": recordID }
-    //       ]
-    //     }
-    //   )
-
-    //to test
-    Calendar.updateOne(
-            { "_id": record.calendarID, "months.weeks.days.slots.records.id": recordID},
-            { $set: { "months.$[].weeks.$[].days.$[].slots.$[].records.$[record].data": newData } },
-            { arrayFilters: [ { "record.id": "2023.JULY_0_0_1_0" } ] }
+   
+        return Calendar.updateOne(
+            { "_id": record.calendarID, 'months.weeks.days.slots.records.id':recordID },
+            { $set: { "months.$[].weeks.$[].days.$[].slots.$[].records.$[record].data": newData }},
+            { arrayFilters: [{ 'record.id': recordID }]}
         )
-      .then(res => record)
-      .catch(err => 
-        {
-            console.log(err);
-            return false
+        .then(result => {
+          console.log('success');
+          return record;
+        })
+        .catch(err => {
+          console.log('err', err);
         });
+      
 
 }
