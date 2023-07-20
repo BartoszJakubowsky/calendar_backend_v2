@@ -28,7 +28,6 @@ module.exports.calendar_create = (req, res) =>
             description : newCalendar.description
         }
     )
-
     calendar.save()
     .then(result => 
         {
@@ -96,23 +95,33 @@ module.exports.data_all = (req, res) =>
 
 };
 
+
+module.exports.calendar_conservation = async (conservation) =>
+{
+    const _id = conservation.id;
+    const conservationBoolean = conservation.conservation;
+    Calendar.updateOne({_id}, {$set : {'conservation' :  conservationBoolean}}).catch(err => console.log('conservation',err))
+}
 module.exports.calendar_sign = async (record) => 
 {
     
     const newData = record.data;
-    const [monthName, weekIndex, dayIndex, slotIndex, recordIndex] = record.recordID.split('_');
-    const weekID = monthName + "_" + weekIndex;
-    const dayID = weekID + "_" + dayIndex;
-    const slotID = dayID + "_" + slotIndex;
-    const recordID = slotID + "_" + recordIndex;
-   
+    // const [monthName, weekIndex, dayIndex, slotIndex, recordIndex] = record.recordID.split('_');
+    // const weekID = monthName + "_" + weekIndex;
+    // const dayID = weekID + "_" + dayIndex;
+    // const slotID = dayID + "_" + slotIndex;
+    // const recordID = slotID + "_" + recordIndex;
+
         return Calendar.updateOne(
-            { "_id": record.calendarID, 'months.weeks.days.slots.records.id':recordID },
-            { $set: { "months.$[].weeks.$[].days.$[].slots.$[].records.$[record].data": newData }},
-            { arrayFilters: [{ 'record.id': recordID }]}
+            { "_id": record.calendarID, 'months.weeks.days.columns.slots.records.id':record.recordID },
+            { $set: { "months.$[].weeks.$[].days.$[].columns.$[].slots.$[].records.$[record].data": record.data }},
+            { arrayFilters: [{ 'record.id': record.recordID }]}
         )
         .then(result => {
-          console.log('success');
+            console.log(result);
+            if (result.modifiedCount === 0)
+                return false
+            else
           return record;
         })
         .catch(err => {

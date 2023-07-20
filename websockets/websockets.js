@@ -36,7 +36,16 @@ function init(io) {
         {
             const index = activeUsers.indexOf(socket.id);
             activeUsers.splice(index, 1);
-         });
+        });
+
+        socket.on('conservation', (request)=>
+        {
+            const id = request.id;
+            const conservation = request.conservation;
+        
+            calendarController.calendar_conservation(request);
+            io.emit('conservation', request);
+        })
 
     });
 
