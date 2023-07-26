@@ -7,7 +7,8 @@ const recordSchema = new Schema(
   [
     {
       id: String,
-      data: String
+      data: String,
+      erase : Boolean,
     }
   ]
 )
@@ -15,13 +16,17 @@ const recordSchema = new Schema(
 const slotSchema = new Schema({
     id: String,
     name: String,
-    records: [recordSchema]
+    records: [recordSchema],
+    messages : Array,
+    erase : Boolean
   });
   
   const columnsSchema = new Schema({
     id: String,
     name: String,
     slots: [slotSchema],
+    messages : Array,
+    erase : Boolean
   })
 
   const daySchema = new Schema({
@@ -29,6 +34,9 @@ const slotSchema = new Schema({
     date: Date,
     id: String,
     columns: [columnsSchema],
+    erase : Boolean,
+    messages : Array,
+    indelible : Boolean
   });
 
   
@@ -37,11 +45,14 @@ const slotSchema = new Schema({
     bannedDays: [String],
     time : Array,
     days: [daySchema],
+    messages : Array,
+    erase : Boolean
   });
   
   const monthSchema = new Schema({
     name: String,
     weeks: [weekSchema],
+    messages: Array
   });
   
   const calendarSchema = new Schema(
@@ -59,7 +70,7 @@ const slotSchema = new Schema({
         type: String,
         required: true,
       },
-      messages: [String],
+      messages: Array,
       conservation : Boolean
     },
     { timestamps: true }
@@ -101,7 +112,8 @@ const createCalendar = ({name, months, slots, bannedDays, autoMonth, description
     {
       const name = monthYear;
       const weeks = renderWeeksWithDays(monthYear);
-      return {name, weeks};
+      const messages = []
+      return {name, weeks, messages};
     }
 
     const renderWeeksWithDays = (monthYear) =>
@@ -158,7 +170,9 @@ const createCalendar = ({name, months, slots, bannedDays, autoMonth, description
       const weekID = monthName + "_" + index.toString();
       const _time = generateTimes(time.timeFrom, time.timeTo, time.timeBetween);
       const days = week.map((day, index) => renderDay(day, weekID, index, _time));
-      return {id: weekID, bannedDays, days, time: _time}
+      const erase = false;
+      const messages = [];
+      return {id: weekID, bannedDays, days, time: _time, erase, messages}
     }
 
     const renderDay = (day, weekID, index, time) =>
@@ -167,7 +181,9 @@ const createCalendar = ({name, months, slots, bannedDays, autoMonth, description
       const name = day.name;
       const date = day.date;
       const columns = slots.map((slot, index) => renderColumn(slot, dayID, index, time));
-      return {id: dayID, name, date, columns}
+      const erase = false;
+      const messages = [];
+      return {id: dayID, name, date, columns, erase, messages}
     }
 
     const renderColumn = (slot, dayID, index, time) =>
@@ -175,26 +191,29 @@ const createCalendar = ({name, months, slots, bannedDays, autoMonth, description
       const columnID = dayID + "_" + index;
       const name = slot.name;
       const slots = time.map((time, index)=>renderSlot(columnID, index, slot))
+      const erase = false;
+      const messages = [];
 
-      return {id: columnID, name, slots}
+      return {id: columnID, name, slots, erase, messages}
     }
 
     const renderSlot = (columnID, index, slot) =>
     {
       const slotID =  columnID + "_" + index;
       const space = parseInt(slot.space);
-
       const records = Array(space).fill().map((emptyRecord, index)=>renderRecord(slotID, index))
+      const erase = false;
+      const messages = []
 
-      return {id:slotID, space, name, records};
+      return {id:slotID, space, name, records, erase, messages};
     }
 
     const renderRecord = (slotID, index) => 
     {
       const recordID = slotID + "_" + index;
       const data = '';
-      
-      return {id: recordID, data}
+      const erase = false
+      return {id: recordID, data, erase}
     }
 
 
@@ -203,7 +222,7 @@ const createCalendar = ({name, months, slots, bannedDays, autoMonth, description
       months: months.map(month => renderMonth(month.date)),
       description,
       autoMonth,
-      conservation
+      conservation : false,
     }
 
     return calendar
