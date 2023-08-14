@@ -114,19 +114,14 @@ module.exports.register_add = async (req, res) => {
 };
 
 module.exports.register_delete = async (req, res) => {
-  const id = req.body.id;
+  const userId = req.params.id;
 
-  await UserRegister.findByIdAndDelete(id).catch((err) => {
-    console.log(err);
-    res.send("Wystąpił problem podczas usuwania prośby o reset hasła");
-  });
-
-  try {
-    const data = await getAllData();
-    res.send({ data: data, message: "Prośba o reset hasła została usunięta" });
-  } catch (error) {
-    res.send("Wystąpił problem podczas usuwania prośby o reset hasła");
-  }
+  UserRegister.findByIdAndDelete(userId)
+    .then((result) => res.send(true))
+    .catch((err) => {
+      console.log("err while removing user from register", err);
+      res.send(false);
+    });
 };
 
 module.exports.password_submit = (req, res) => {
@@ -186,35 +181,26 @@ module.exports.password_submit = (req, res) => {
 };
 
 module.exports.password_add = async (req, res) => {
-  const users = req.body;
-  try {
-    for (let i = 0; i < users.length; i++) {
-      const id = users[i]._id;
-      const newPassword = users[i].password;
-      const updatedFields = { password: newPassword };
-      await User.findByIdAndUpdate(id, updatedFields, { new: true }).then(
-        (updatedUser) => {
-          if (!updatedUser) return false;
-          else {
-            UserPassword.findByIdAndDelete(id).catch((err) => console.log(err));
-          }
-        }
-      );
-    }
-  } catch (err) {
-    console.log(err);
-    return;
-  }
-  getAllData()
-    .then((data) => {
-      if (users.length === 1) {
-        res.send({ data: data, message: "Nowe hasło zostało zapisane" });
+  const userId = req.params.id;
+  const user = req.body;
+  const newPassword = user.password;
+
+  const updatedFields = { password: newPassword };
+  User.findByIdAndUpdate(userId, updatedFields, { new: true }).then(
+    (updatedUser) => {
+      if (!updatedUser) {
+        res.send(false);
+        console.log("error while updating password");
       } else {
-        res.send({ data: data, message: "Nowe hasła zostały zapisane" });
+        UserPassword.findByIdAndDelete(userId)
+          .then((result) => res.send(updatedUser))
+          .catch((err) => {
+            console.log("err while removing user fomr list", err);
+            res.send(false);
+          });
       }
-    })
-    .catch((err) => console.log(err));
-  //move from password to register
+    }
+  );
 };
 
 module.exports.password_delete = async (req, res) => {
@@ -302,7 +288,6 @@ module.exports.login = (req, res) => {
 };
 
 module.exports.user_update = (req, res) => {
-  console.log("halo");
   const user = req.body;
   const userId = req.params.id;
 
