@@ -43,17 +43,13 @@ module.exports.calendar_create = (req, res) => {
 };
 
 module.exports.calendar_edit = (req, res) => {
-  const { name, date, time, slots, bannedDays, autoMonth, slotMessages, _id } =
-    req.body;
-  Calendar.updateOne(
-    { _id },
-    { name, date, time, slots, bannedDays, autoMonth, slotMessages }
-  )
+  const newCalendar = req.body;
+  Calendar.updateOne({ _id }, { $set: newCalendar })
     .then((result) => {
       res.send(true);
     })
     .catch((err) => {
-      console.log(err);
+      console.log("err while updating calendar", err);
       res.send(false);
     });
 };
@@ -84,7 +80,7 @@ module.exports.data_all = (req, res) => {
 };
 
 module.exports.calendar_conservation = async (conservation) => {
-  const _id = conservation.id;
+  const _id = conservation.calendarId;
   const conservationBoolean = conservation.conservation;
   Calendar.updateOne(
     { _id },
@@ -92,17 +88,10 @@ module.exports.calendar_conservation = async (conservation) => {
   ).catch((err) => console.log("conservation", err));
 };
 module.exports.calendar_sign = async (record) => {
-  const newData = record.data;
-  // const [monthName, weekIndex, dayIndex, slotIndex, recordIndex] = record.recordID.split('_');
-  // const weekID = monthName + "_" + weekIndex;
-  // const dayID = weekID + "_" + dayIndex;
-  // const slotID = dayID + "_" + slotIndex;
-  // const recordID = slotID + "_" + recordIndex;
-
   return Calendar.updateOne(
     {
-      _id: record.calendarID,
-      "months.weeks.days.columns.slots.records.id": record.recordID,
+      _id: record.calendarId,
+      "months.weeks.days.columns.slots.records.id": record.recordId,
     },
     {
       $set: {
@@ -110,10 +99,9 @@ module.exports.calendar_sign = async (record) => {
           record.data,
       },
     },
-    { arrayFilters: [{ "record.id": record.recordID }] }
+    { arrayFilters: [{ "record.id": record.recordId }] }
   )
     .then((result) => {
-      console.log(result);
       if (result.modifiedCount === 0) return false;
       else return record;
     })

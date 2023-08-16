@@ -288,8 +288,8 @@ module.exports.login = (req, res) => {
 };
 
 module.exports.user_update = (req, res) => {
-  const user = req.body;
   const userId = req.params.id;
+  const user = req.body;
 
   User.updateOne({ _id: userId }, user)
     .then((result) => res.send(result))
