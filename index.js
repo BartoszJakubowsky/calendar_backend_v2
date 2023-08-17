@@ -11,6 +11,7 @@ const authRoutes = require("./routes/authRoutes");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
 const path = require("path");
+const bodyParser = require("body-parser");
 //for websockets
 const server = require("http").Server(app);
 const websocket = require("./websockets/websockets");
@@ -21,6 +22,15 @@ const io = require("socket.io")(server, {
     methods: ["GET", "POST"],
   },
 });
+
+app.use(bodyParser.json({ limit: "50mb" }));
+app.use(
+  bodyParser.urlencoded({
+    limit: "50mb",
+    extended: true,
+    parameterLimit: 50000,
+  })
+);
 app.use(express.json());
 app.use(cors());
 

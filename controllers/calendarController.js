@@ -43,6 +43,7 @@ module.exports.calendar_create = (req, res) => {
 };
 
 module.exports.calendar_edit = (req, res) => {
+  const _id = req.params.id;
   const newCalendar = req.body;
   Calendar.updateOne({ _id }, { $set: newCalendar })
     .then((result) => {
