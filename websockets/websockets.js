@@ -1,12 +1,8 @@
-//database emulator
 var activeUsers = [];
-const uuidv4 = require("uuidv4");
 const calendarController = require("../controllers/calendarController");
 const authController = require("../controllers/authController");
 function init(io) {
   io.on("connection", function (socket) {
-    // const userId = uuidv4();
-    // activeUsers[userId] = socket;
     activeUsers.push(socket.id);
 
     io.to(socket.id).emit("connected", {
@@ -19,6 +15,7 @@ function init(io) {
         .then((res) => {
           if (res) {
             io.emit("sign", request);
+            authController.user_updateRecord(request);
           } else throw new Error();
         })
         .catch((err) =>

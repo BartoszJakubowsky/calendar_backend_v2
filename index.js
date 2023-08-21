@@ -23,40 +23,30 @@ const io = require("socket.io")(server, {
   },
 });
 
-app.use(bodyParser.json({ limit: "50mb" }));
+app.use(express.json());
+app.use(cors());
+
+//for calendar update
+app.use(bodyParser.json({ limit: "100mb" }));
 app.use(
   bodyParser.urlencoded({
-    limit: "50mb",
+    limit: "100mb",
     extended: true,
     parameterLimit: 50000,
   })
 );
-app.use(express.json());
-app.use(cors());
 
-// app.use((req, res, next) => {
-//   if (req.method === 'GET') {
-//     console.log('otrzymany get');
-//     return express.static(path.join(__dirname, 'build'))(req, res, next);
-//   }
-//   // next();
-// });
+app.use(express.static(path.join(__dirname, "build")));
 
-// app.use(express.static(path.join(__dirname, 'build')));
 const routesToPassWithoutJWT = [
-  "/login",
   "/logowanie",
   "/password/submit",
   "/register/submit",
 ];
-const knownRoutes = [
-  "/login",
-  "/logowanie",
-  "/password/submit",
-  "/register/submit",
-];
+const getRoutesWithJWT = ["/calendar, data/all"];
+
 const verifyJWT = (req, res, next) => {
-  if (req.method === "GET") {
+  if (req.method === "GET" && !getRoutesWithJWT.includes(req.originalUrl)) {
     next();
     return;
   }
@@ -78,39 +68,31 @@ const verifyJWT = (req, res, next) => {
       res.status(401).json({ auth: false, message: "Failed to authenticate" });
       return;
     }
-    // const decodedToken = jwt.decode(token);
-    // const currentTime = Math.floor(Date.now() / 1000);
-    // const expiresIn = decodedToken.exp - currentTime;
 
-    // req.id = decoded.user.id;
     next();
   });
 };
-// import jwt from 'jsonwebtoken';
-// const authRoutes = require('./routes/authRoutes.js');
-
-app.use(verifyJWT);
-
-app.use(express.static("public"));
 
 const dbURI = `mongodb+srv://${DB_LOGIN}:${DB_PASSWORD}@calendar.va1iidg.mongodb.net/${DB_NAME}?retryWrites=true&w=majority`;
 mongoose
   .connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then((resault) => {
-    // app.listen(3003, ()=> console.log('serwer działa na porcie 3003'));
+    console.log("database connected correctly");
   })
-  .catch((err) => console.log(err));
+  .catch((err) => {
+    console.log("error while connecting to database", err);
+  });
 
 app.use(authRoutes);
 app.use("/calendar", calendarRoutes);
+app.use(verifyJWT);
+// app.use(express.static("public"));
 
 // app.get("*", (req, res) => {
 //   res.sendFile(path.join(__dirname, "build", "index.html"));
 // });
 
 websocket(io);
-// app.use(authRoutes);
-// server.listen(process.env.PORT || 3002, () => console.log('server działa, port 3002'));
 server.listen(process.env.PORT || 3000, () =>
-  console.log("server działa, domyślnie port 3000")
+  console.log("server's up, port 3000 by default")
 );

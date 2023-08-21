@@ -21,8 +21,7 @@ const getAllData = async () => {
 };
 const createToken = (user) => {
   const token = jwt.sign({ user }, JWT_KEY, {
-    expiresIn: 300000,
-    // expiresIn: 300000,
+    expiresIn: 30000,
   });
 
   return token;
@@ -45,7 +44,6 @@ module.exports.get_all = (req, res) => {
 };
 
 module.exports.register_submit = (req, res) => {
-  //to change
   const email = req.body.mail;
   User.findOne({ mail: email })
     .then((user) => {
@@ -83,7 +81,7 @@ module.exports.register_submit = (req, res) => {
       }
     })
     .catch((err) => {
-      console.log(err);
+      console.log("err while adding user into register table", err);
       res.send("error");
     });
 };
@@ -144,14 +142,6 @@ module.exports.password_submit = (req, res) => {
           const userRecords = user.records;
           const userId = user._id;
 
-          console.log(
-            userName,
-            userMail,
-            userPassword,
-            userPermissions,
-            userRecords,
-            userId
-          );
           const newUserPassword = new UserPassword({
             _id: userId,
             name: userName,
@@ -297,6 +287,57 @@ module.exports.user_update = (req, res) => {
       console.log("add user erro");
       res.send(false);
     });
+};
+
+module.exports.user_updateRecord = (req, res) => {
+  const userId = req.body.userId;
+  const newRecord = req.date;
+
+  User.findById(userId, (err, user) => {
+    if (err) {
+      console.log("error while updating record", err);
+    }
+    const checkRecordExists = () => {
+      return user.records.some((record) => record.id === newRecord.id);
+    };
+
+    if (checkRecordExists())
+      User.updateOne(
+        userId,
+        { $pull: { records: { id: newRecord.id } } },
+        (err, result) => {
+          if (err) console.error("err while removing record", err);
+        }
+      );
+    else
+      User.updateOne(
+        { userId },
+        { $push: { records: newRecord } },
+        (err, result) => {
+          if (err) console.error("err while adding record", err);
+        }
+      );
+  });
+};
+
+module.exports.get_user = async (req, res) => {
+  const userId = req.params.id;
+  const token = req.headers["x-access-token"];
+  jwt.verify(token, JWT_KEY, (err, decoded) => {
+    if (err) {
+      console.log("error while decoding token for get user", err);
+      return false;
+    }
+
+    const user = decoded.user;
+    if (userId !== user._id) return false;
+    User.findById(userId)
+      .then((response) => res.send(response))
+      .catch((err) => {
+        console.log("err while getting user", err);
+        res.send(false);
+      });
+  });
 };
 
 module.exports.token = (req, res) => {
