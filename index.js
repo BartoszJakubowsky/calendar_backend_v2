@@ -88,9 +88,9 @@ app.use("/calendar", calendarRoutes);
 app.use(verifyJWT);
 // app.use(express.static("public"));
 
-// app.get("*", (req, res) => {
-//   res.sendFile(path.join(__dirname, "build", "index.html"));
-// });
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "build", "index.html"));
+});
 
 websocket(io);
 server.listen(process.env.PORT || 3000, () =>
