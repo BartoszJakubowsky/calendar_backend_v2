@@ -284,60 +284,73 @@ module.exports.user_update = (req, res) => {
   User.updateOne({ _id: userId }, user)
     .then((result) => res.send(result))
     .catch((err) => {
-      console.log("add user erro");
+      console.log("add user error", err);
       res.send(false);
     });
 };
 
-module.exports.user_updateRecord = (req, res) => {
-  const userId = req.body.userId;
+module.exports.user_updateRecord = async (req, res) => {
+  const userId = req.userId;
+  const recordId = req.recordId;
+  const calendarId = req.calendarId;
   const newRecord = req.date;
+  newRecord.calendarId = calendarId;
+  newRecord.recordId = recordId;
+  newRecord.userId = userId;
 
-  User.findById(userId, (err, user) => {
-    if (err) {
-      console.log("error while updating record", err);
-    }
-    const checkRecordExists = () => {
-      return user.records.some((record) => record.id === newRecord.id);
-    };
-
-    if (checkRecordExists())
-      User.updateOne(
-        userId,
-        { $pull: { records: { id: newRecord.id } } },
-        (err, result) => {
-          if (err) console.error("err while removing record", err);
-        }
-      );
-    else
-      User.updateOne(
-        { userId },
-        { $push: { records: newRecord } },
-        (err, result) => {
-          if (err) console.error("err while adding record", err);
-        }
-      );
-  });
+  User.findById(userId)
+    .then((user) => {
+      const checkRecordExists = () => {
+        return user.records.some(
+          (record) => record.recordId === newRecord.recordId
+        );
+      };
+      if (checkRecordExists()) {
+        const indexOfRecord = user.records.findIndex(
+          (record) => record.recordId === newRecord.recordId
+        );
+        user.records.splice(indexOfRecord, 1);
+        user.save();
+      } else {
+        Calendar.findById(calendarId)
+          .then((calendar) => {
+            newRecord.calendarName = calendar.name;
+            user.records.push(newRecord);
+            user.save();
+          })
+          .catch((err) => {
+            console.log(
+              "err while getting calendar name for user record update",
+              err
+            );
+          });
+      }
+    })
+    .catch((err) =>
+      console.log("err while searching for user for record update", err)
+    );
 };
 
 module.exports.get_user = async (req, res) => {
   const userId = req.params.id;
-  const token = req.headers["x-access-token"];
-  jwt.verify(token, JWT_KEY, (err, decoded) => {
-    if (err) {
-      console.log("error while decoding token for get user", err);
-      return false;
-    }
+  // const token = req.headers["x-access-token"];
+  // jwt.verify(token, JWT_KEY, (err, decoded) => {
+  //   if (err) {
+  //     console.log("error while decoding token for get user", err);
+  //     return false;
+  //   }
 
-    const user = decoded.user;
-    if (userId !== user._id) return false;
-    User.findById(userId)
-      .then((response) => res.send(response))
-      .catch((err) => {
-        console.log("err while getting user", err);
-        res.send(false);
-      });
-  });
+  //   const user = decoded.user;
+  //   if (userId !== user._id) return false;
+  User.findById(userId)
+    .then((user) => {
+      res.send(user.records);
+    })
+    .catch((err) => {
+      console.log("err while getting user", err);
+      res.send(false);
+    });
+  // });
 };
 
 module.exports.token = (req, res) => {
